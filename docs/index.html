@@ -19,7 +19,7 @@ WebRTC Client Proto<br />
 <button type="button" onclick="connect();">Connect</button>
 <button type="button" onclick="hangUp();">Hang Up</button>
 <div>
-  <audio id="remote_video" autoplay></audio>
+  <video id="remote_video" autoplay style="width: 160px; height: 120px; border: 1px solid black;"></video>
 </div>
 <label>
   <span>SDP to send:<br /></span>
@@ -88,7 +88,7 @@ WebRTC Client Proto<br />
   // ---------------------- media handling -----------------------
   // start local video
   function startVideo() {
-    getDeviceStream({video: false, audio: true})
+    getDeviceStream({video: true, audio: false})
       .then(function (stream) { // success
         localStream = stream;
       }).catch(function (error) { // error
