@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+      "sourceMap": true,
+      "strict": true,
+      "target": "ESNext",
+      "module": "ESNext",
+      "jsx": "react",
+      "moduleResolution": "node",
+      "lib": ["ES2020", "DOM", "ESNext.String"],
+      "allowSyntheticDefaultImports": true,
+      "resolveJsonModule": true,
+      "skipLibCheck": true
+    },
+    "exclude": ["node_modules", "docs"]
+  }
+
