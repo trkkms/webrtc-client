@@ -5,7 +5,7 @@
   <title>WebRTC Client Proto</title>
 </head>
 <body>
-WebRTC Client Proto<br />
+WebRTC Client Proto With Echo cancellation<br />
 <div>
   <label>
     <span>WS URL</span>
@@ -104,7 +104,14 @@ WebRTC Client Proto<br />
   // start local video
   function startVideo() {
     displayedLog("start audio rec");
-    getDeviceStream({video: false, audio: true})
+    getDeviceStream(
+      {
+        video: false,
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true
+        }
+      })
       .then(function (stream) { // success
         localStream = stream;
       }).catch(function (error) { // error
