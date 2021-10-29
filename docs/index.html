@@ -19,7 +19,7 @@ WebRTC Client Proto<br />
 <button type="button" onclick="connect();">Connect</button>
 <button type="button" onclick="hangUp();">Hang Up</button>
 <div>
-  <video id="remote_video" autoplay style="width: 160px; height: 120px; border: 1px solid black;"></video>
+  <audio id="remote_video" autoplay style="width: 160px; height: 120px; border: 1px solid black;"></audio>
 </div>
 <label>
   <span>SDP to send:<br /></span>
@@ -32,6 +32,10 @@ WebRTC Client Proto<br />
   <br />
   <textarea id="text_for_receive_sdp" rows="5" cols="60"></textarea>
 </p>
+<label>
+  <span>Log:</span>
+  <textarea id="log_area"></textarea>
+</label>
 </body>
 <script type="text/javascript">
   let remoteVideo = document.getElementById('remote_video');
@@ -39,6 +43,11 @@ WebRTC Client Proto<br />
   let peerConnection = null;
   let textForSendSdp = document.getElementById('text_for_send_sdp');
   let textToReceiveSdp = document.getElementById('text_for_receive_sdp');
+
+  function displayedLog(text) {
+    const e = document.getElementById('log_area');
+    e.value = text + "\n" + e.value;
+  }
 
   // --- prefix -----
   navigator.getUserMedia  = navigator.getUserMedia    || navigator.webkitGetUserMedia ||
@@ -59,16 +68,20 @@ WebRTC Client Proto<br />
     let wsUrl = urlElem.value;
     ws = new WebSocket(wsUrl);
     ws.onopen = function(evt) {
+      displayedLog("ws open()");
       console.log('ws open()');
     };
     ws.onerror = function(err) {
+      displayedLog("ws onerror()");
       console.error('ws onerror() ERR:', err);
     };
     ws.onmessage = function(evt) {
+      displayedLog("ws onmessage()");
       console.log('ws onmessage() data:', evt.data);
       let message = JSON.parse(evt.data);
       if (message.type === 'offer') {
         // -- got offer ---
+        displayedLog("offer received");
         console.log('Received offer ...');
         textToReceiveSdp.value = message.sdp;
         let offer = new RTCSessionDescription(message);
@@ -76,22 +89,26 @@ WebRTC Client Proto<br />
       }
       else if (message.type === 'answer') {
         // --- got answer ---
+        displayedLog("answer received");
         console.log('Received answer ...');
         textToReceiveSdp.value = message.sdp;
         let answer = new RTCSessionDescription(message);
         setAnswer(answer);
       }
     };
+    displayedLog("WebSocket Started");
   }
 
 
   // ---------------------- media handling -----------------------
   // start local video
   function startVideo() {
-    getDeviceStream({video: true, audio: false})
+    displayedLog("start audio rec");
+    getDeviceStream({video: false, audio: true})
       .then(function (stream) { // success
         localStream = stream;
       }).catch(function (error) { // error
+      displayedLog("getUserMedia failed");
       console.error('getUserMedia error:', error);
     });
   }
@@ -104,6 +121,7 @@ WebRTC Client Proto<br />
   function stopLocalStream(stream) {
     let tracks = stream.getTracks();
     if (! tracks) {
+      displayedLog("No Tracks");
       console.warn('NO tracks');
       return;
     }
@@ -137,7 +155,7 @@ WebRTC Client Proto<br />
       element.src = window.URL.createObjectURL(stream);
     }
     element.play();
-    element.volume = 0.5;
+    element.volume = 1;
   }
 
   function pauseVideo(element) {
@@ -344,6 +362,7 @@ WebRTC Client Proto<br />
 
   // start PeerConnection
   function connect() {
+    displayedLog("start connection");
     if (! peerConnection) {
       console.log('make Offer');
       makeOffer();
@@ -355,6 +374,7 @@ WebRTC Client Proto<br />
 
   // close PeerConnection
   function hangUp() {
+    displayedLog("hang up");
     if (peerConnection) {
       console.log('Hang up.');
       peerConnection.close();
