@@ -20,7 +20,7 @@ const webpackConfig: (env: WebpackEnv) => webpack.Configuration & { devServer: W
     devtool: isProduction ? undefined : 'eval-source-map',
     entry: './src/main.tsx',
     output: {
-      path: `${__dirname}/dist`,
+      path: `${__dirname}/docs`,
       filename: 'main.js',
     },
     module: {

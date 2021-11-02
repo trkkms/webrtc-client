@@ -7,15 +7,19 @@
     "test": "jest",
     "dev": "npm start",
     "build": "npx webpack --env production",
+    "build:dev": "npx webpack",
     "start": "webpack serve"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@blackbox-vision/react-qr-reader": "^5.0.0",
+    "@emotion/core": "^11.0.0",
     "@emotion/react": "^11.4.1",
     "classnames": "^2.3.1",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react-dom": "^17.0.2",
+    "react-qr-code": "^2.0.2"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.14.1",

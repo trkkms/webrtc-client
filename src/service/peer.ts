@@ -1,33 +1,90 @@
+import { Logger } from '../util/types';
+
+export interface PeerEventEmitters {
+  onReceiveOffer: (sdp: RTCSessionDescription) => void;
+  onReceiveAnswer: (sdp: RTCSessionDescription) => void;
+  setVolume: (volume: number) => void;
+}
+
 export default class PeerService {
   private peer?: RTCPeerConnection;
-
-  start() {
+  private tuner = new AudioTuner();
+  constructor(private logger: Logger) {}
+  preparePeer(): RTCPeerConnection {
     if (this.peer !== undefined) {
-      console.warn('peer connection already exists. close existing one');
+      this.logger('peer connection already exists. close existing one', 'warn');
       this.peer.close();
     }
-    const peer = new RTCPeerConnection({ iceServers: [] });
-    this.peer = peer;
+    this.peer = new RTCPeerConnection({ iceServers: [] });
+    return this.peer;
+  }
+  async createOfferPeer(
+    onTrack: (stream: MediaStream) => void,
+    onSDP: (sdp: RTCSessionDescription | null) => void,
+  ): Promise<void> {
+    const peer = this.preparePeer();
+    peer.ontrack = (evt) => {
+      onTrack(evt.streams[0]);
+    };
+    peer.onicecandidate = (evt) => {
+      if (!evt.candidate) {
+        onSDP(peer.localDescription);
+      }
+    };
+  }
+  async createOffer(): Promise<void> {
+    if (this.peer === undefined) {
+      return;
+    }
+    const description = await this.peer.createOffer();
+    await this.peer.setLocalDescription(description);
+    this.logger('setLocalDescription() succeeded.');
+  }
+  async receiveOffer(offer: RTCSessionDescription): Promise<void> {
+    if (this.peer === undefined) {
+      return;
+    }
+    await this.peer.setRemoteDescription(offer);
+    this.logger('Received Offer, creating an answer.');
+    const answer = await this.peer.createAnswer();
+    await this.peer.setLocalDescription(answer);
+  }
+  async receiveAnswer(answer: RTCSessionDescription): Promise<void> {
+    if (this.peer === undefined) {
+      this.logger('The connection has not been created on receiveAnswer()', 'error');
+      return;
+    }
+    await this.peer.setRemoteDescription(answer);
   }
   close() {
     if (this.peer === undefined) {
-      console.warn('peer connection does not exist.');
+      this.logger('peer connection does not exist.', 'warn');
       return;
     }
     this.peer.close();
     this.peer = undefined;
   }
-  async startLocalAudio() {
-    if (this.peer === undefined) {
-      console.warn('No peer connection established');
-      return;
-    }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (this.peer as any).addStream(stream);
-    } catch (e) {
-      console.error('ERROR: cannot open local audio:', e);
-    }
+  addLocalStream(base: MediaStream): (volume: number) => void {
+    const [stream, setVolume] = this.tuner.createTunableMedia(base);
+    this.peer?.addTrack(stream.getTracks()[0]);
+    return setVolume;
+  }
+}
+
+class AudioTuner {
+  private context: AudioContext = new AudioContext();
+  createTunableMedia(base: MediaStream): [stream: MediaStream, setVolume: (volume: number) => void] {
+    const source = this.context.createMediaStreamSource(base);
+    const dest = this.context.createMediaStreamDestination();
+    const gainNode = this.context.createGain();
+    source.connect(gainNode);
+    gainNode.connect(dest);
+    gainNode.gain.setValueAtTime(1.0, this.context.currentTime);
+    return [
+      dest.stream,
+      (volume) => {
+        gainNode.gain.setValueAtTime(volume, this.context.currentTime);
+      },
+    ];
   }
 }
