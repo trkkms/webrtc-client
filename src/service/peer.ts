@@ -8,7 +8,7 @@ export interface PeerEventEmitters {
 
 export default class PeerService {
   private peer?: RTCPeerConnection;
-  private tuner = new AudioTuner();
+  private tuner?: AudioTuner;
   constructor(private logger: Logger) {}
   preparePeer(): RTCPeerConnection {
     if (this.peer !== undefined) {
@@ -73,6 +73,9 @@ export default class PeerService {
     this.peer = undefined;
   }
   addLocalStream(base: MediaStream): (volume: number) => void {
+    if (this.tuner === undefined) {
+      this.tuner = new AudioTuner();
+    }
     const [stream, setVolume] = this.tuner.createTunableMedia(base);
     this.peer?.addTrack(stream.getTracks()[0]);
     return setVolume;

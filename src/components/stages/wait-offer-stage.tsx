@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { STAGE, Stage } from '../../util/stage';
 import PeerService from '../../service/peer';
-import { QrReader } from '@blackbox-vision/react-qr-reader';
+import QrcodeReader from '../ex/qrcode-reader';
 import { Logger } from '../../util/types';
 export interface Props {
   stage: Stage;
@@ -28,8 +28,8 @@ const WaitOfferStage = ({
     <section>
       <h2>2nd. Waiting for an offer.</h2>
       {cameraStart && (
-        <QrReader
-          onResult={async (result, error) => {
+        <QrcodeReader
+          onResult={async (result) => {
             if (result) {
               logger('QR Code Reading Succeeded');
               setCameraStart(false);
@@ -51,12 +51,8 @@ const WaitOfferStage = ({
                 logger('Received Text could not be parsed as a session description', 'error');
               }
             }
-            if (error) {
-              logger('QR Code Reading Failed', 'error');
-            }
             setCameraStart(false);
           }}
-          constraints={{ facingMode: 'environment' }}
         />
       )}
       {!cameraStart && stage === STAGE.WAIT_OFFER && <p>Loading...</p>}
