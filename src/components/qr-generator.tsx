@@ -9,7 +9,8 @@ export interface Props {
 
 const QrGenerator = ({ value, title }: Props) => {
   const compressed = useMemo(() => {
-    return pako.deflate(value, { level: 9, to: 'string' });
+    const t = pako.deflate(value, { level: 9 });
+    return String.fromCharCode.apply(null, Array.from(t));
   }, [value]);
   return <QRCode value={compressed} title={title} />;
 };
