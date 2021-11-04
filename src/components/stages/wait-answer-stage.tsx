@@ -1,7 +1,5 @@
 /** @jsxImportSource @emotion/react */
-import React, { useState } from 'react';
-import { css } from '@emotion/react';
-import classNames from 'classnames';
+import React, { useEffect, useState } from 'react';
 import { STAGE, Stage } from '../../util/stage';
 import PeerService from '../../service/peer';
 import { QrReader } from '@blackbox-vision/react-qr-reader';
@@ -13,15 +11,18 @@ export interface Props {
   logger: Logger;
 }
 
-const hide = {
-  '&.hide': {
-    display: 'none',
-  },
-};
-
 const WaitAnswerStage = ({ onStageChange, stage, service, logger }: Props) => {
   const [cameraStart, setCameraStart] = useState(false);
-  const [text, setText] = useState('');
+  useEffect(() => {
+    service.onConnect((peer) => {
+      if (peer === undefined) {
+        return;
+      }
+      if (peer.connectionState === 'connected') {
+        onStageChange(STAGE.HOST_CONNECTED);
+      }
+    });
+  }, []);
   return (
     <section>
       <h2>3rd. Waiting for an answer.</h2>
@@ -31,19 +32,24 @@ const WaitAnswerStage = ({ onStageChange, stage, service, logger }: Props) => {
       {cameraStart && (
         <QrReader
           onResult={async (result, error) => {
+            setCameraStart(false);
             if (result) {
               logger('QR Code Reading Succeeded');
-              setText(result.getText());
+              try {
+                await service.receiveAnswer(new RTCSessionDescription({ type: 'answer', sdp: result.getText() }));
+              } catch (e) {
+                logger('Error on Reading SDP Answer', 'error');
+              }
             }
             if (error) {
               logger('QR Code Reading Failed', 'error');
             }
-            setCameraStart(false);
           }}
           constraints={{ facingMode: 'environment' }}
         />
       )}
-      <pre>{text}</pre>
+      {!cameraStart && stage === STAGE.WAIT_ANSWER && <p>Loading...</p>}
+      {!cameraStart && stage !== STAGE.WAIT_ANSWER && <p>Connected!</p>}
     </section>
   );
 };

@@ -1,7 +1,5 @@
 /** @jsxImportSource @emotion/react */
 import React, { useState } from 'react';
-import { css } from '@emotion/react';
-import classNames from 'classnames';
 import { STAGE, Stage } from '../../util/stage';
 import PeerService from '../../service/peer';
 import { QrReader } from '@blackbox-vision/react-qr-reader';
@@ -15,12 +13,6 @@ export interface Props {
   service: PeerService;
   logger: Logger;
 }
-
-const hide = {
-  '&.hide': {
-    display: 'none',
-  },
-};
 
 const WaitOfferStage = ({
   onStageChange,
@@ -40,20 +32,24 @@ const WaitOfferStage = ({
           onResult={async (result, error) => {
             if (result) {
               logger('QR Code Reading Succeeded');
+              setCameraStart(false);
               const text = result.getText();
               await service.createOfferPeer(onTrack, (answer) => {
                 if (!answer) {
                   logger('No Answer Given', 'error');
                   return;
                 }
-                setCameraStart(false);
                 setAnswer(answer.sdp);
                 onStageChange(STAGE.SHOW_ANSWER);
               });
               const base = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
               const volumeChanger = service.addLocalStream(base);
               setRemoteVolumeChanger(volumeChanger);
-              await service.receiveOffer(new RTCSessionDescription({ type: 'answer', sdp: text }));
+              try {
+                await service.receiveOffer(new RTCSessionDescription({ type: 'offer', sdp: text }));
+              } catch (e) {
+                logger('Received Text could not be parsed as a session description', 'error');
+              }
             }
             if (error) {
               logger('QR Code Reading Failed', 'error');
@@ -63,6 +59,7 @@ const WaitOfferStage = ({
           constraints={{ facingMode: 'environment' }}
         />
       )}
+      {!cameraStart && stage === STAGE.WAIT_OFFER && <p>Loading...</p>}
     </section>
   );
 };

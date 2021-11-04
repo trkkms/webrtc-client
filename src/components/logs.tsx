@@ -15,7 +15,7 @@ const LogColor: { [level in LogLevel]: string } = {
 
 const Logs = ({ items }: Props) => {
   return (
-    <ul css={css({ listStyleType: 'none', margin: 0, padding: 0 })}>
+    <ul css={css({ listStyleType: 'none', margin: '0.5rem', padding: 0, height: '3rem', overflowY: 'scroll' })}>
       {items.map(({ message, level }, idx) => {
         return (
           <li

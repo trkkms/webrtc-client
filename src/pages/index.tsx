@@ -4,17 +4,20 @@ import LoggerContext from '../contexts/log';
 import { LogLevel } from '../util/types';
 import Logs from '../components/logs';
 import PeerService from '../service/peer';
-import { isHostStage, STAGE, Stage } from '../util/stage';
+import { isGuestStage, isHostStage, STAGE, Stage } from '../util/stage';
 import StartStage from '../components/stages/start-stage';
 import ShowOfferStage from '../components/stages/show-offer-stage';
 import WaitAnswerStage from '../components/stages/wait-answer-stage';
 import { css } from '@emotion/react';
+import Layout from '../components/layout';
+import WaitOfferStage from '../components/stages/wait-offer-stage';
+import ShowAnswerStage from '../components/stages/show-answer-stage';
 
 const Index = () => {
   const [logs, setLogs] = useState<Array<{ message: string; level: LogLevel }>>([]);
   const [stage, setStage] = useState<Stage>(STAGE.START);
-  const [localVolume, setLocalVolume] = useState(1);
-  const [remoteVolume, setRemoteVolume] = useState(1);
+  const [localVolume, setLocalVolume] = useState(0.5);
+  const [remoteVolume, setRemoteVolume] = useState(0.5);
   const [isMicMute, setMicMute] = useState(false);
   const [isSpeakerMute, setSpeakerMute] = useState(false);
   const [answer, setAnswer] = useState('');
@@ -44,98 +47,133 @@ const Index = () => {
   }, [localVolume, isSpeakerMute]);
   return (
     <LoggerContext.Provider value={logger}>
-      <main>
-        <h1>WebRTC Example</h1>
-        <StartStage stage={stage} onStageChange={setStage} />
-        {isHostStage(stage, 10) && (
-          <ShowOfferStage
-            stage={stage}
-            onStageChange={setStage}
-            service={service}
-            logger={logger}
-            onTrack={onTrack}
-            setRemoteVolumeChanger={setRemoteVolumeChanger}
-          />
-        )}
-        {isHostStage(stage, 20) && (
-          <WaitAnswerStage stage={stage} onStageChange={setStage} service={service} logger={logger} />
-        )}
-        <audio autoPlay ref={audioRef} />
-        <div
+      <Layout>
+        <main
           css={css({
-            position: 'fixed',
-            bottom: 0,
-            display: 'flex',
-            width: '100%',
-            height: '4rem',
-            padding: '0.25rem',
-            margin: 0,
-            overflowY: 'scroll',
+            maxWidth: '1200px',
           })}
         >
-          <div>
-            <ul css={css({ listStyleType: 'none', display: 'flex', margin: 0, padding: 0 })}>
-              <li>
-                <label>
-                  <span>Mic</span>
-                  <input
-                    type="range"
-                    max={1}
-                    min={0}
-                    step={0.01}
-                    onChange={(e) => setRemoteVolume(Number(e.target.value))}
-                  />
-                </label>
-                <button
-                  type="button"
-                  css={css({
-                    position: 'relative',
-                    textDecoration: isMicMute ? 'line-through' : 'none',
-                    width: '4rem',
-                    '& span': {
+          <h1>WebRTC Example</h1>
+          <StartStage stage={stage} onStageChange={setStage} />
+          {/* Host Stages */}
+          <>
+            {isHostStage(stage, 10) && (
+              <ShowOfferStage
+                stage={stage}
+                onStageChange={setStage}
+                service={service}
+                logger={logger}
+                onTrack={onTrack}
+                setRemoteVolumeChanger={setRemoteVolumeChanger}
+              />
+            )}
+            {isHostStage(stage, 20) && (
+              <WaitAnswerStage stage={stage} onStageChange={setStage} service={service} logger={logger} />
+            )}
+          </>
+          {/* Guest Stages */}
+          <>
+            {isGuestStage(stage, 10) && (
+              <WaitOfferStage
+                stage={stage}
+                onStageChange={setStage}
+                service={service}
+                logger={logger}
+                onTrack={onTrack}
+                setRemoteVolumeChanger={setRemoteVolumeChanger}
+                setAnswer={setAnswer}
+              />
+            )}
+            {isGuestStage(stage, 20) && (
+              <ShowAnswerStage stage={stage} service={service} onStageChange={setStage} answer={answer} />
+            )}
+          </>
+          <audio autoPlay ref={audioRef} />
+          <div
+            css={css({
+              position: 'fixed',
+              bottom: 0,
+              height: '6.5rem',
+              padding: '0.25rem',
+              margin: 0,
+            })}
+          >
+            <div css={css({ height: '3rem' })}>
+              <ul
+                css={css({
+                  listStyleType: 'none',
+                  display: 'flex',
+                  margin: 0,
+                  padding: 0,
+                  borderTop: '1px solid rgba(128, 128, 128, 0.5)',
+                })}
+              >
+                <li>
+                  <label>
+                    <span>Mic</span>
+                    <input
+                      type="range"
+                      value={remoteVolume}
+                      max={1}
+                      min={0}
+                      step={0.01}
+                      onChange={(e) => setRemoteVolume(Number(e.target.value))}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    css={css({
+                      display: 'inline-flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
                       textDecoration: isMicMute ? 'line-through' : 'none',
-                    },
-                  })}
-                  onClick={() => setMicMute((prev) => !prev)}
-                >
-                  <span css={css({ position: 'absolute', left: '0.25rem' })}>{'🎤'}</span>
-                  <span css={css({ position: 'absolute', right: '0.25rem' })}>{remoteVolume.toFixed(2)}</span>
-                  {'　'}
-                </button>
-              </li>
-              <li>
-                <label>
-                  <span>Speaker</span>
-                  <input
-                    type="range"
-                    max={1}
-                    min={0}
-                    step={0.01}
-                    onChange={(e) => setLocalVolume(Number(e.target.value))}
-                  />
-                </label>
-                <button
-                  type="button"
-                  css={css({
-                    position: 'relative',
-                    textDecoration: isSpeakerMute ? 'line-through' : 'none',
-                    width: '4rem',
-                    '& span': {
+                      width: '5rem',
+                      '& span': {
+                        textDecoration: isMicMute ? 'line-through' : 'none',
+                      },
+                    })}
+                    onClick={() => setMicMute((prev) => !prev)}
+                  >
+                    <span>{'🎤'}</span>
+                    <span>{remoteVolume.toFixed(2)}</span>
+                  </button>
+                </li>
+                <li>
+                  <label>
+                    <span>Speaker</span>
+                    <input
+                      type="range"
+                      value={localVolume}
+                      max={1}
+                      min={0}
+                      step={0.01}
+                      onChange={(e) => setLocalVolume(Number(e.target.value))}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    css={css({
+                      display: 'inline-flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
                       textDecoration: isSpeakerMute ? 'line-through' : 'none',
-                    },
-                  })}
-                  onClick={() => setSpeakerMute((prev) => !prev)}
-                >
-                  <span css={css({ position: 'absolute', left: '0.25rem' })}>{'🔈'}</span>
-                  <span css={css({ position: 'absolute', right: '0.25rem' })}>{localVolume.toFixed(2)}</span>
-                  {'　'}
-                </button>
-              </li>
-            </ul>
+                      width: '5rem',
+                      '& span': {
+                        textDecoration: isSpeakerMute ? 'line-through' : 'none',
+                      },
+                    })}
+                    onClick={() => setSpeakerMute((prev) => !prev)}
+                  >
+                    <span>{'🔈'}</span>
+                    <span>{localVolume.toFixed(2)}</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+            <Logs items={logs} />
           </div>
-          <Logs items={logs} />
-        </div>
-      </main>
+        </main>
+      </Layout>
     </LoggerContext.Provider>
   );
 };
