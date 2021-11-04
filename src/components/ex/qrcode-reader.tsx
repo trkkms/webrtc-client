@@ -39,13 +39,25 @@ const QrcodeReader = ({ onResult }: Props) => {
     };
   }, [onResult]);
   return (
-    <video
-      ref={videoRef}
+    <div
       css={css({
-        maxWidth: '100%',
-        height: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'fixed',
+        background: 'rgba(0,0,0,0.7)',
+        zIndex: 10,
+        width: '100%',
       })}
-    />
+    >
+      <video
+        ref={videoRef}
+        css={css({
+          width: '100%',
+          maxHeight: '100%',
+        })}
+      />
+    </div>
   );
 };
 
