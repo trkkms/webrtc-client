@@ -1,5 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import React, { useState } from 'react';
+import pako from 'pako';
 import { STAGE, Stage } from '../../util/stage';
 import PeerService from '../../service/peer';
 import QrcodeReader from '../ex/qrcode-reader';
@@ -33,7 +34,7 @@ const WaitOfferStage = ({
             if (result) {
               logger('QR Code Reading Succeeded');
               setCameraStart(false);
-              const text = result.getText();
+              const text = pako.inflate(result.getText(), { to: 'string' });
               await service.createOfferPeer(onTrack, (answer) => {
                 if (!answer) {
                   logger('No Answer Given', 'error');

@@ -1,5 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import React, { useEffect, useState } from 'react';
+import pako from 'pako';
 import { STAGE, Stage } from '../../util/stage';
 import PeerService from '../../service/peer';
 import { Logger } from '../../util/types';
@@ -36,7 +37,9 @@ const WaitAnswerStage = ({ onStageChange, stage, service, logger }: Props) => {
             if (result) {
               logger('QR Code Reading Succeeded');
               try {
-                await service.receiveAnswer(new RTCSessionDescription({ type: 'answer', sdp: result.getText() }));
+                await service.receiveAnswer(
+                  new RTCSessionDescription({ type: 'answer', sdp: pako.inflate(result.getText(), { to: 'string' }) }),
+                );
               } catch (e) {
                 logger('Error on Reading SDP Answer', 'error');
               }
