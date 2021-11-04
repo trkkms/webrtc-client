@@ -34,7 +34,14 @@ const WaitOfferStage = ({
             if (result) {
               logger('QR Code Reading Succeeded');
               setCameraStart(false);
-              const text = pako.inflate(result.getText(), { to: 'string' });
+              const compressed = new Uint8Array();
+              const t = result.getText();
+              for (const [idx, c] of t.split('').entries()) {
+                compressed[idx] = c.charCodeAt(0);
+              }
+              const inflated = pako.inflate(compressed);
+              const sdp = String.fromCharCode.apply(null, Array.from(inflated));
+              console.log(sdp);
               await service.createOfferPeer(onTrack, (answer) => {
                 if (!answer) {
                   logger('No Answer Given', 'error');
@@ -47,7 +54,7 @@ const WaitOfferStage = ({
               const volumeChanger = service.addLocalStream(base);
               setRemoteVolumeChanger(volumeChanger);
               try {
-                await service.receiveOffer(new RTCSessionDescription({ type: 'offer', sdp: text }));
+                await service.receiveOffer(new RTCSessionDescription({ type: 'offer', sdp: sdp }));
               } catch (e) {
                 logger('Received Text could not be parsed as a session description', 'error');
               }
