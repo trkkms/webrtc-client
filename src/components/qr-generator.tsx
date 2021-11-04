@@ -1,4 +1,6 @@
+/** @jsxImportSource @emotion/react */
 import React, { useMemo } from 'react';
+import { css } from '@emotion/react';
 import pako from 'pako';
 import QRCode from 'react-qr-code';
 
@@ -12,7 +14,16 @@ const QrGenerator = ({ value, title }: Props) => {
     const t = pako.deflate(value, { level: 9 });
     return String.fromCharCode.apply(null, Array.from(t));
   }, [value]);
-  return <QRCode value={compressed} title={title} />;
+  return (
+    <div
+      css={css({
+        display: 'flex',
+        justifyContent: 'center',
+      })}
+    >
+      <QRCode value={compressed} title={title} />
+    </div>
+  );
 };
 
 export default QrGenerator;

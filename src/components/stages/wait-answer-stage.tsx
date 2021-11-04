@@ -36,10 +36,16 @@ const WaitAnswerStage = ({ onStageChange, stage, service, logger }: Props) => {
             setCameraStart(false);
             if (result) {
               logger('QR Code Reading Succeeded');
+              const compressed = new Uint8Array();
+              const t = result.getText();
+              for (const [idx, c] of t.split('').entries()) {
+                compressed[idx] = c.charCodeAt(0);
+              }
+              console.log(compressed);
+              const inflated = pako.inflate(compressed);
+              const sdp = String.fromCharCode.apply(null, Array.from(inflated));
               try {
-                await service.receiveAnswer(
-                  new RTCSessionDescription({ type: 'answer', sdp: pako.inflate(result.getText(), { to: 'string' }) }),
-                );
+                await service.receiveAnswer(new RTCSessionDescription({ type: 'answer', sdp }));
               } catch (e) {
                 logger('Error on Reading SDP Answer', 'error');
               }
