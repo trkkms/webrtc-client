@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import pako from 'pako';
 import QRCode from 'react-qr-code';
 
 export interface Props {
@@ -7,7 +8,10 @@ export interface Props {
 }
 
 const QrGenerator = ({ value, title }: Props) => {
-  return <QRCode value={value} title={title} />;
+  const compressed = useMemo(() => {
+    return pako.deflate(value, { level: 9, to: 'string' });
+  }, [value]);
+  return <QRCode value={compressed} title={title} />;
 };
 
 export default QrGenerator;
