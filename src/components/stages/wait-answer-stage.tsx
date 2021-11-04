@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { STAGE, Stage } from '../../util/stage';
 import PeerService from '../../service/peer';
-import { QrReader } from '@blackbox-vision/react-qr-reader';
 import { Logger } from '../../util/types';
+import QrcodeReader from '../ex/qrcode-reader';
 export interface Props {
   stage: Stage;
   onStageChange: (stage: Stage) => void;
@@ -30,8 +30,8 @@ const WaitAnswerStage = ({ onStageChange, stage, service, logger }: Props) => {
         {cameraStart ? 'STOP CAMERA' : 'START CAMERA'}
       </button>
       {cameraStart && (
-        <QrReader
-          onResult={async (result, error) => {
+        <QrcodeReader
+          onResult={async (result) => {
             setCameraStart(false);
             if (result) {
               logger('QR Code Reading Succeeded');
@@ -41,11 +41,7 @@ const WaitAnswerStage = ({ onStageChange, stage, service, logger }: Props) => {
                 logger('Error on Reading SDP Answer', 'error');
               }
             }
-            if (error) {
-              logger('QR Code Reading Failed', 'error');
-            }
           }}
-          constraints={{ facingMode: 'environment' }}
         />
       )}
       {!cameraStart && stage === STAGE.WAIT_ANSWER && <p>Loading...</p>}
