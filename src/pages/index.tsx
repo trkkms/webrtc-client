@@ -88,6 +88,11 @@ const Index = () => {
               <ShowAnswerStage stage={stage} service={service} onStageChange={setStage} answer={answer} />
             )}
           </>
+          <div
+            css={css({
+              paddingBottom: '20rem',
+            })}
+          />
           <audio autoPlay ref={audioRef} />
           <div
             css={css({
