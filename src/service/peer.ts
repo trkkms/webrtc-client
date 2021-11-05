@@ -94,19 +94,21 @@ export default class PeerService {
 }
 
 class AudioTuner {
-  private context: AudioContext = new AudioContext();
+  // private context: AudioContext = new AudioContext();
   createTunableMedia(base: MediaStream): [stream: MediaStream, setVolume: (volume: number) => void] {
-    const source = this.context.createMediaStreamSource(base);
-    const dest = this.context.createMediaStreamDestination();
-    const gainNode = this.context.createGain();
-    source.connect(gainNode);
-    gainNode.connect(dest);
-    gainNode.gain.value = 1.0;
+    // const source = this.context.createMediaStreamSource(base);
+    // const dest = this.context.createMediaStreamDestination();
+    // const gainNode = this.context.createGain();
+    // source.connect(gainNode);
+    // gainNode.connect(dest);
+    // gainNode.gain.value = 1.0;
     return [
-      dest.stream,
-      (volume) => {
-        gainNode.gain.value = volume;
-      },
+      // dest.stream,
+      base,
+      () => {},
+      // (volume) => {
+      //   gainNode.gain.value = volume;
+      // },
     ];
   }
 }
