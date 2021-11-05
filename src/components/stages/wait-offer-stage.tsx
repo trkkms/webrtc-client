@@ -1,10 +1,10 @@
 /** @jsxImportSource @emotion/react */
 import React, { useState } from 'react';
-import pako from 'pako';
 import { STAGE, Stage } from '../../util/stage';
 import PeerService from '../../service/peer';
 import QrcodeReader from '../ex/qrcode-reader';
 import { Logger } from '../../util/types';
+import { decodeSDP } from '../../util/encode';
 export interface Props {
   stage: Stage;
   onStageChange: (stage: Stage) => void;
@@ -34,14 +34,6 @@ const WaitOfferStage = ({
             if (result) {
               logger('QR Code Reading Succeeded');
               setCameraStart(false);
-              const compressed = new Uint8Array();
-              const t = result.getText();
-              for (const [idx, c] of t.split('').entries()) {
-                compressed[idx] = c.charCodeAt(0);
-              }
-              const inflated = pako.inflate(compressed);
-              const sdp = String.fromCharCode.apply(null, Array.from(inflated));
-              console.log(sdp);
               await service.createOfferPeer(onTrack, (answer) => {
                 if (!answer) {
                   logger('No Answer Given', 'error');
@@ -54,6 +46,7 @@ const WaitOfferStage = ({
               const volumeChanger = service.addLocalStream(base);
               setRemoteVolumeChanger(volumeChanger);
               try {
+                const sdp = decodeSDP(result.getText());
                 await service.receiveOffer(new RTCSessionDescription({ type: 'offer', sdp: sdp }));
               } catch (e) {
                 logger('Received Text could not be parsed as a session description', 'error');

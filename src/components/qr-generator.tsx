@@ -1,8 +1,8 @@
 /** @jsxImportSource @emotion/react */
 import React, { useMemo } from 'react';
 import { css } from '@emotion/react';
-import pako from 'pako';
 import QRCode from 'react-qr-code';
+import { encodeSDP } from '../util/encode';
 
 export interface Props {
   title: string;
@@ -11,8 +11,7 @@ export interface Props {
 
 const QrGenerator = ({ value, title }: Props) => {
   const compressed = useMemo(() => {
-    const t = pako.deflate(value, { level: 9 });
-    return String.fromCharCode.apply(null, Array.from(t));
+    return encodeSDP(value);
   }, [value]);
   return (
     <div
@@ -21,7 +20,7 @@ const QrGenerator = ({ value, title }: Props) => {
         justifyContent: 'center',
       })}
     >
-      <QRCode value={compressed} title={title} />
+      <QRCode value={window.btoa(compressed)} title={title} />
     </div>
   );
 };
