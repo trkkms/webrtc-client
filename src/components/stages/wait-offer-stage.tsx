@@ -13,6 +13,7 @@ export interface Props {
   setAnswer: (answer: string) => void;
   service: PeerService;
   logger: Logger;
+  setLocalAudio: (stream: MediaStream) => void;
 }
 
 const WaitOfferStage = ({
@@ -23,6 +24,7 @@ const WaitOfferStage = ({
   service,
   logger,
   setRemoteVolumeChanger,
+  setLocalAudio,
 }: Props) => {
   const [cameraStart, setCameraStart] = useState(true);
   const [firstHalf, setFirstHalf] = useState('');
@@ -58,7 +60,7 @@ const WaitOfferStage = ({
                 onStageChange(STAGE.SHOW_ANSWER);
               });
               const base = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-              const volumeChanger = service.addLocalStream(base);
+              const volumeChanger = service.addLocalStream(base, setLocalAudio);
               setRemoteVolumeChanger(volumeChanger);
               try {
                 const sdp = decodeSDP(firstHalf + result.getText());

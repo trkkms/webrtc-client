@@ -76,12 +76,19 @@ export default class PeerService {
     this.peer.close();
     this.peer = undefined;
   }
-  addLocalStream(base: MediaStream): (volume: number) => void {
+  addLocalStream(base: MediaStream, setLocalAudio: (stream: MediaStream) => void): (volume: number) => void {
     if (this.tuner === undefined) {
       this.tuner = new AudioTuner();
     }
+    if (this.peer === undefined) {
+      this.logger('no peer found on addLocalStream()', 'error');
+      return () => {};
+    }
     const [stream, setVolume] = this.tuner.createTunableMedia(base);
-    this.peer?.addTrack(stream.getTracks()[0]);
+    setLocalAudio(stream);
+    for (const track of stream.getTracks()) {
+      this.peer.addTrack(track);
+    }
     return setVolume;
   }
 }
@@ -94,11 +101,11 @@ class AudioTuner {
     const gainNode = this.context.createGain();
     source.connect(gainNode);
     gainNode.connect(dest);
-    gainNode.gain.setValueAtTime(1.0, this.context.currentTime);
+    gainNode.gain.value = 1.0;
     return [
       dest.stream,
       (volume) => {
-        gainNode.gain.setValueAtTime(volume, this.context.currentTime);
+        gainNode.gain.value = volume;
       },
     ];
   }

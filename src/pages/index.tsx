@@ -26,6 +26,15 @@ const Index = () => {
     remoteVolumeChangerRef.current.f = f;
   }, []);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const localAudioRef = useRef<HTMLAudioElement>(null);
+  const setLocalAudio = useCallback((stream: MediaStream) => {
+    if (localAudioRef.current) {
+      localAudioRef.current.srcObject = stream;
+      localAudioRef.current.play().catch((e) => {
+        logger('error on playing local audio' + String(e), 'error');
+      });
+    }
+  }, []);
   const onTrack = useCallback((stream: MediaStream) => {
     if (audioRef.current) {
       audioRef.current.srcObject = stream;
@@ -68,6 +77,7 @@ const Index = () => {
                 logger={logger}
                 onTrack={onTrack}
                 setRemoteVolumeChanger={setRemoteVolumeChanger}
+                setLocalAudio={setLocalAudio}
               />
             )}
             {isHostStage(stage, 20) && (
@@ -85,6 +95,7 @@ const Index = () => {
                 onTrack={onTrack}
                 setRemoteVolumeChanger={setRemoteVolumeChanger}
                 setAnswer={setAnswer}
+                setLocalAudio={setLocalAudio}
               />
             )}
             {isGuestStage(stage, 20) && (
@@ -97,6 +108,7 @@ const Index = () => {
             })}
           />
           <audio autoPlay ref={audioRef} />
+          <audio muted ref={localAudioRef} />
           <div
             css={css({
               position: 'fixed',
