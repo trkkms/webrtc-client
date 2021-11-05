@@ -48,8 +48,8 @@ const ShowOfferStage = ({ stage, onStageChange, service, onTrack, logger, setRem
       <p css={css(hide)} className={classNames({ hide: offer.length > 0 })}>
         Loading ...
       </p>
-      {offer && stage === STAGE.SHOW_OFFER && part === 1 && (
-        <div>
+      <div>
+        {stage === STAGE.SHOW_ANSWER && part === 1 && (
           <ul>
             <li>
               <button
@@ -62,9 +62,9 @@ const ShowOfferStage = ({ stage, onStageChange, service, onTrack, logger, setRem
               </button>
             </li>
           </ul>
-          <QrGenerator title="Offer SDP" value={offer} part={part} />
-        </div>
-      )}
+        )}
+        {offer && stage === STAGE.SHOW_OFFER && <QrGenerator title="Offer SDP" value={offer} part={part} />}
+      </div>
       {offer && stage === STAGE.SHOW_OFFER && part === 2 && (
         <ul>
           <li>
