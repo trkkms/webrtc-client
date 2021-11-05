@@ -62,6 +62,9 @@ export default class PeerService {
       return;
     }
     this.peer.onconnectionstatechange = () => {
+      if (this.peer) {
+        this.logger(this.peer.connectionState);
+      }
       f(this.peer);
     };
   }

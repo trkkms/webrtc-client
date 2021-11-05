@@ -16,8 +16,8 @@ import ShowAnswerStage from '../components/stages/show-answer-stage';
 const Index = () => {
   const [logs, setLogs] = useState<Array<{ message: string; level: LogLevel }>>([]);
   const [stage, setStage] = useState<Stage>(STAGE.START);
-  const [localVolume, setLocalVolume] = useState(0.5);
-  const [remoteVolume, setRemoteVolume] = useState(0.5);
+  const [localVolume, setLocalVolume] = useState(1);
+  const [remoteVolume, setRemoteVolume] = useState(1);
   const [isMicMute, setMicMute] = useState(false);
   const [isSpeakerMute, setSpeakerMute] = useState(false);
   const [answer, setAnswer] = useState('');
@@ -29,6 +29,9 @@ const Index = () => {
   const onTrack = useCallback((stream: MediaStream) => {
     if (audioRef.current) {
       audioRef.current.srcObject = stream;
+      audioRef.current.play().catch((e) => {
+        logger('error on playing' + String(e), 'error');
+      });
     }
   }, []);
   const logger = useCallback((message: string, level: LogLevel = 'log') => {
