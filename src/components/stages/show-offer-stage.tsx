@@ -49,7 +49,7 @@ const ShowOfferStage = ({ stage, onStageChange, service, onTrack, logger, setRem
         Loading ...
       </p>
       <div>
-        {stage === STAGE.SHOW_ANSWER && part === 1 && (
+        {stage === STAGE.SHOW_OFFER && part === 1 && (
           <ul>
             <li>
               <button
