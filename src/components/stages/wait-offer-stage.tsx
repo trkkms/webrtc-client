@@ -44,6 +44,10 @@ const WaitOfferStage = ({
             if (result) {
               logger('QR Code Reading Succeeded');
               setCameraStart(false);
+              if (!firstHalf) {
+                setFirstHalf(result.getText());
+                return;
+              }
               await service.createOfferPeer(onTrack, (answer) => {
                 if (!answer) {
                   logger('No Answer Given', 'error');
@@ -55,15 +59,12 @@ const WaitOfferStage = ({
               const base = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
               const volumeChanger = service.addLocalStream(base);
               setRemoteVolumeChanger(volumeChanger);
-              if (!firstHalf) {
-                setFirstHalf(result.getText());
-                return;
-              }
               try {
                 const sdp = decodeSDP(result.getText() + firstHalf);
+                console.log(sdp);
                 await service.receiveOffer(new RTCSessionDescription({ type: 'offer', sdp: sdp }));
               } catch (e) {
-                logger('Received Text could not be parsed as a session description', 'error');
+                logger('Received Text could not be parsed as a session description' + String(e), 'error');
               }
             }
             setCameraStart(false);
