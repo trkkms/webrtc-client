@@ -25,7 +25,7 @@ const QrGenerator = ({ value, title, part }: Props) => {
         value={
           part === 1
             ? compressed.substring(0, Math.floor(compressed.length / 2))
-            : compressed.substring(Math.floor(part / 2))
+            : compressed.substring(Math.floor(compressed.length / 2))
         }
         title={title}
       />
