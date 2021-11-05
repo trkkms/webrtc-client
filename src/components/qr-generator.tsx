@@ -20,7 +20,7 @@ const QrGenerator = ({ value, title }: Props) => {
         justifyContent: 'center',
       })}
     >
-      <QRCode value={window.btoa(compressed)} title={title} />
+      <QRCode value={compressed} title={title} />
     </div>
   );
 };
