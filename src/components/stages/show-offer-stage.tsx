@@ -48,7 +48,7 @@ const ShowOfferStage = ({ stage, onStageChange, service, onTrack, logger, setRem
       <p css={css(hide)} className={classNames({ hide: offer.length > 0 })}>
         Loading ...
       </p>
-      {offer && stage === STAGE.SHOW_OFFER && (
+      {offer && stage === STAGE.SHOW_OFFER && part === 1 && (
         <div>
           <ul>
             <li>

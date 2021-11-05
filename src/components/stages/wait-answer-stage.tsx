@@ -37,7 +37,7 @@ const WaitAnswerStage = ({ onStageChange, stage, service, logger }: Props) => {
             setCameraStart(false);
             if (result) {
               logger('QR Code Reading Succeeded');
-              if (!firstHalf) {
+              if (firstHalf === '') {
                 setFirstHalf(result.getText());
                 return;
               }
@@ -51,7 +51,7 @@ const WaitAnswerStage = ({ onStageChange, stage, service, logger }: Props) => {
           }}
         />
       )}
-      {!cameraStart && stage === STAGE.WAIT_ANSWER && <p>Loading...</p>}
+      {!cameraStart && stage === STAGE.WAIT_ANSWER && <pre>Loading...</pre>}
       {!cameraStart && stage !== STAGE.WAIT_ANSWER && <p>Connected!</p>}
     </section>
   );
