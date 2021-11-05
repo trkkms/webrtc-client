@@ -26,8 +26,8 @@ const ShowAnswerStage = ({ onStageChange, service, answer, stage }: Props) => {
   return (
     <section>
       <h2>Show Answer SDP</h2>
-      {stage === STAGE.SHOW_ANSWER && part === 1 && (
-        <div>
+      <div>
+        {stage === STAGE.SHOW_ANSWER && part === 1 && (
           <ul>
             <li>
               <button
@@ -40,9 +40,9 @@ const ShowAnswerStage = ({ onStageChange, service, answer, stage }: Props) => {
               </button>
             </li>
           </ul>
-          <QrGenerator title="Answer SDP" value={answer} part={part} />
-        </div>
-      )}
+        )}
+        {stage === STAGE.SHOW_ANSWER && <QrGenerator title="Answer SDP" value={answer} part={part} />}
+      </div>
       {stage !== STAGE.SHOW_ANSWER && <p>Connected!</p>}
     </section>
   );
