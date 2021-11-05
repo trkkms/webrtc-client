@@ -22,7 +22,11 @@ const QrGenerator = ({ value, title, part }: Props) => {
       })}
     >
       <QRCode
-        value={part === 1 ? compressed.substring(0, Math.floor(part / 2)) : compressed.substring(Math.floor(part / 2))}
+        value={
+          part === 1
+            ? compressed.substring(0, Math.floor(compressed.length / 2))
+            : compressed.substring(Math.floor(part / 2))
+        }
         title={title}
       />
     </div>
