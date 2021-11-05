@@ -33,9 +33,10 @@ const WaitAnswerStage = ({ onStageChange, stage, service, logger }: Props) => {
       </button>
       {cameraStart && (
         <QrcodeReader
-          onResult={async (result) => {
-            setCameraStart(false);
+          onResult={async (result, controls) => {
             if (result) {
+              controls.stop();
+              setCameraStart(false);
               logger('QR Code Reading Succeeded');
               if (firstHalf === '') {
                 setFirstHalf(result.getText());
@@ -43,6 +44,7 @@ const WaitAnswerStage = ({ onStageChange, stage, service, logger }: Props) => {
               }
               try {
                 const sdp = decodeSDP(firstHalf + result.getText());
+                console.log(sdp);
                 await service.receiveAnswer(new RTCSessionDescription({ type: 'answer', sdp }));
               } catch (e) {
                 logger('Error on Reading SDP Answer' + String(e), 'error');

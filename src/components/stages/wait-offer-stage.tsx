@@ -40,9 +40,10 @@ const WaitOfferStage = ({
       )}
       {cameraStart && (
         <QrcodeReader
-          onResult={async (result) => {
+          onResult={async (result, controls) => {
             if (result) {
               logger('QR Code Reading Succeeded');
+              controls.stop();
               setCameraStart(false);
               if (firstHalf === '') {
                 setFirstHalf(result.getText());
@@ -61,6 +62,7 @@ const WaitOfferStage = ({
               setRemoteVolumeChanger(volumeChanger);
               try {
                 const sdp = decodeSDP(firstHalf + result.getText());
+                console.log(sdp);
                 await service.receiveOffer(new RTCSessionDescription({ type: 'offer', sdp: sdp }));
               } catch (e) {
                 logger('Received Text could not be parsed as a session description' + String(e), 'error');
