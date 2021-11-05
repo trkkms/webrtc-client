@@ -5,7 +5,7 @@ import { Result } from '@zxing/library';
 import { BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
 
 export interface Props {
-  onResult: (result: Result) => void;
+  onResult: (result: Result, controls: IScannerControls) => void;
 }
 
 const QrcodeReader = ({ onResult }: Props) => {
@@ -22,7 +22,7 @@ const QrcodeReader = ({ onResult }: Props) => {
           return;
         }
         if (result) {
-          onResult(result);
+          onResult(result, controls);
         }
         controlsRef.current = controls;
       });
