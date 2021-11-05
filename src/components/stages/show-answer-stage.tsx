@@ -26,7 +26,7 @@ const ShowAnswerStage = ({ onStageChange, service, answer, stage }: Props) => {
   return (
     <section>
       <h2>Show Answer SDP</h2>
-      {stage === STAGE.SHOW_ANSWER && (
+      {stage === STAGE.SHOW_ANSWER && part === 1 && (
         <div>
           <ul>
             <li>

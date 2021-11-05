@@ -55,6 +55,7 @@ export default class PeerService {
       return;
     }
     await this.peer.setRemoteDescription(answer);
+    this.logger('Received Answer. creating connection...');
   }
   onConnect(f: (peer?: RTCPeerConnection) => void) {
     if (this.peer === undefined) {
