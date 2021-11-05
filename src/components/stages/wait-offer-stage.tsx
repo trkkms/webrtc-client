@@ -25,9 +25,19 @@ const WaitOfferStage = ({
   setRemoteVolumeChanger,
 }: Props) => {
   const [cameraStart, setCameraStart] = useState(true);
+  const [firstHalf, setFirstHalf] = useState('');
   return (
     <section>
       <h2>2nd. Waiting for an offer.</h2>
+      {!cameraStart && firstHalf && stage === STAGE.WAIT_OFFER && (
+        <ul>
+          <li>
+            <button type="button" onClick={() => setCameraStart(true)}>
+              Restart Camera for 2nd Part
+            </button>
+          </li>
+        </ul>
+      )}
       {cameraStart && (
         <QrcodeReader
           onResult={async (result) => {
@@ -45,8 +55,12 @@ const WaitOfferStage = ({
               const base = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
               const volumeChanger = service.addLocalStream(base);
               setRemoteVolumeChanger(volumeChanger);
+              if (!firstHalf) {
+                setFirstHalf(result.getText());
+                return;
+              }
               try {
-                const sdp = decodeSDP(result.getText());
+                const sdp = decodeSDP(result.getText() + firstHalf);
                 await service.receiveOffer(new RTCSessionDescription({ type: 'offer', sdp: sdp }));
               } catch (e) {
                 logger('Received Text could not be parsed as a session description', 'error');

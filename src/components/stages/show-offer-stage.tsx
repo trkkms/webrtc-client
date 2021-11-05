@@ -24,6 +24,7 @@ const hide = {
 
 const ShowOfferStage = ({ stage, onStageChange, service, onTrack, logger, setRemoteVolumeChanger }: Props) => {
   const [offer, setOffer] = useState('');
+  const [part, setPart] = useState<1 | 2>(1);
   useEffect(() => {
     const f = async () => {
       await service.createOfferPeer(onTrack, (offer) => {
@@ -47,8 +48,24 @@ const ShowOfferStage = ({ stage, onStageChange, service, onTrack, logger, setRem
       <p css={css(hide)} className={classNames({ hide: offer.length > 0 })}>
         Loading ...
       </p>
-      {offer && stage === STAGE.SHOW_OFFER && <QrGenerator title="Offer SDP" value={offer} />}
       {offer && stage === STAGE.SHOW_OFFER && (
+        <div>
+          <ul>
+            <li>
+              <button
+                type="button"
+                onClick={() => {
+                  setPart(2);
+                }}
+              >
+                Next Part
+              </button>
+            </li>
+          </ul>
+          <QrGenerator title="Offer SDP" value={offer} part={part} />
+        </div>
+      )}
+      {offer && stage === STAGE.SHOW_OFFER && part === 2 && (
         <ul>
           <li>
             <button type="button" onClick={() => onStageChange(STAGE.WAIT_ANSWER)}>

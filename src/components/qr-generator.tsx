@@ -7,9 +7,10 @@ import { encodeSDP } from '../util/encode';
 export interface Props {
   title: string;
   value: string;
+  part: 1 | 2;
 }
 
-const QrGenerator = ({ value, title }: Props) => {
+const QrGenerator = ({ value, title, part }: Props) => {
   const compressed = useMemo(() => {
     return encodeSDP(value);
   }, [value]);
@@ -20,7 +21,10 @@ const QrGenerator = ({ value, title }: Props) => {
         justifyContent: 'center',
       })}
     >
-      <QRCode value={compressed} title={title} />
+      <QRCode
+        value={part === 1 ? compressed.substring(0, Math.floor(part / 2)) : compressed.substring(Math.floor(part / 2))}
+        title={title}
+      />
     </div>
   );
 };

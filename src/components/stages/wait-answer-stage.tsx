@@ -14,6 +14,7 @@ export interface Props {
 
 const WaitAnswerStage = ({ onStageChange, stage, service, logger }: Props) => {
   const [cameraStart, setCameraStart] = useState(false);
+  const [firstHalf, setFirstHalf] = useState('');
   useEffect(() => {
     service.onConnect((peer) => {
       if (peer === undefined) {
@@ -28,7 +29,7 @@ const WaitAnswerStage = ({ onStageChange, stage, service, logger }: Props) => {
     <section>
       <h2>3rd. Waiting for an answer.</h2>
       <button type="button" onClick={() => setCameraStart((prev) => !prev)}>
-        {cameraStart ? 'STOP CAMERA' : 'START CAMERA'}
+        {cameraStart ? 'STOP CAMERA' : firstHalf ? 'Start Camera for next part' : 'START CAMERA'}
       </button>
       {cameraStart && (
         <QrcodeReader
@@ -36,8 +37,12 @@ const WaitAnswerStage = ({ onStageChange, stage, service, logger }: Props) => {
             setCameraStart(false);
             if (result) {
               logger('QR Code Reading Succeeded');
+              if (!firstHalf) {
+                setFirstHalf(result.getText());
+                return;
+              }
               try {
-                const sdp = decodeSDP(result.getText());
+                const sdp = decodeSDP(firstHalf + result.getText());
                 await service.receiveAnswer(new RTCSessionDescription({ type: 'answer', sdp }));
               } catch (e) {
                 logger('Error on Reading SDP Answer' + String(e), 'error');
