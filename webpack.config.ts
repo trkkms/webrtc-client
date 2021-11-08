@@ -18,10 +18,12 @@ const webpackConfig: (env: WebpackEnv) => webpack.Configuration & { devServer: W
   return {
     mode: isProduction ? 'production' : 'development',
     devtool: isProduction ? undefined : 'eval-source-map',
-    entry: './src/main.tsx',
+    entry: {
+      main: './src/main.tsx',
+    },
     output: {
       path: `${__dirname}/docs`,
-      filename: 'main.js',
+      filename: '[name].js',
     },
     module: {
       rules: [

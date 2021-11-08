@@ -48,7 +48,7 @@ const WaitOfferStage = ({ onStageChange, onTrack, setAnswer, stage, service, log
                 setAnswer(answer.sdp);
                 onStageChange(STAGE.SHOW_ANSWER);
               });
-              const base = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+              const base = await navigator.mediaDevices.getUserMedia({ audio: { latency: 0.01 }, video: false });
               service.addLocalStream(base);
               try {
                 const sdp = decodeSDP(firstHalf + result.getText());

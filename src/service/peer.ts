@@ -87,7 +87,7 @@ export default class PeerService {
       (this.peer as any).addStream(stream);
     } else {
       for (const track of stream.getTracks()) {
-        this.peer.addTrack(track);
+        this.peer.addTrack(track, stream);
       }
     }
     return;
