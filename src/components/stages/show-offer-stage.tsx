@@ -13,8 +13,6 @@ export interface Props {
   logger: Logger;
   onStageChange: (stage: Stage) => void;
   onTrack: (stream: MediaStream) => void;
-  setRemoteVolumeChanger: (f: (volume: number) => void) => void;
-  setLocalAudio: (stream: MediaStream) => void;
 }
 
 const hide = {
@@ -23,15 +21,7 @@ const hide = {
   },
 };
 
-const ShowOfferStage = ({
-  stage,
-  onStageChange,
-  service,
-  onTrack,
-  logger,
-  setRemoteVolumeChanger,
-  setLocalAudio,
-}: Props) => {
+const ShowOfferStage = ({ stage, onStageChange, service, onTrack, logger }: Props) => {
   const [offer, setOffer] = useState('');
   const [part, setPart] = useState<1 | 2>(1);
   useEffect(() => {
@@ -42,8 +32,7 @@ const ShowOfferStage = ({
         }
       });
       const base = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-      const volumeChanger = service.addLocalStream(base, setLocalAudio);
-      setRemoteVolumeChanger(volumeChanger);
+      service.addLocalStream(base);
       await service.createOffer();
     };
     logger('START OFFER');

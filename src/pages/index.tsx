@@ -17,41 +17,27 @@ const Index = () => {
   const [logs, setLogs] = useState<Array<{ message: string; level: LogLevel }>>([]);
   const [stage, setStage] = useState<Stage>(STAGE.START);
   const [localVolume, setLocalVolume] = useState(1);
-  const [remoteVolume, setRemoteVolume] = useState(1);
-  const [isMicMute, setMicMute] = useState(false);
   const [isSpeakerMute, setSpeakerMute] = useState(false);
   const [answer, setAnswer] = useState('');
-  const remoteVolumeChangerRef = useRef<{ f: ((volume: number) => void) | null }>({ f: null });
-  const setRemoteVolumeChanger = useCallback((f: (volume: number) => void) => {
-    remoteVolumeChangerRef.current.f = f;
-  }, []);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const localAudioRef = useRef<HTMLAudioElement>(null);
-  const setLocalAudio = useCallback((stream: MediaStream) => {
-    if (localAudioRef.current) {
-      localAudioRef.current.srcObject = stream;
-      localAudioRef.current.play().catch((e) => {
-        logger('error on playing local audio' + String(e), 'error');
-      });
-    }
-  }, []);
   const onTrack = useCallback((stream: MediaStream) => {
     if (audioRef.current) {
-      audioRef.current.srcObject = stream;
+      if ('srcObject' in audioRef.current) {
+        audioRef.current.srcObject = stream;
+      } else {
+        // eslint-disable-next-line
+        (audioRef.current as any).src = window.URL.createObjectURL(stream);
+      }
       audioRef.current.play().catch((e) => {
         logger('error on playing' + String(e), 'error');
       });
+      audioRef.current.volume = localVolume;
     }
   }, []);
   const logger = useCallback((message: string, level: LogLevel = 'log') => {
     setLogs((prev) => [{ message, level }, ...prev]);
   }, []);
   const service = useMemo(() => new PeerService(logger), []);
-  useEffect(() => {
-    if (remoteVolumeChangerRef.current.f) {
-      remoteVolumeChangerRef.current.f(isMicMute ? 0 : remoteVolume);
-    }
-  }, [remoteVolume, isMicMute]);
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = isSpeakerMute ? 0 : localVolume;
@@ -76,8 +62,6 @@ const Index = () => {
                 service={service}
                 logger={logger}
                 onTrack={onTrack}
-                setRemoteVolumeChanger={setRemoteVolumeChanger}
-                setLocalAudio={setLocalAudio}
               />
             )}
             {isHostStage(stage, 20) && (
@@ -93,9 +77,7 @@ const Index = () => {
                 service={service}
                 logger={logger}
                 onTrack={onTrack}
-                setRemoteVolumeChanger={setRemoteVolumeChanger}
                 setAnswer={setAnswer}
-                setLocalAudio={setLocalAudio}
               />
             )}
             {isGuestStage(stage, 20) && (
@@ -108,7 +90,6 @@ const Index = () => {
             })}
           />
           <audio autoPlay ref={audioRef} />
-          <audio muted ref={localAudioRef} />
           <div
             css={css({
               position: 'fixed',
@@ -128,36 +109,6 @@ const Index = () => {
                   borderTop: '1px solid rgba(128, 128, 128, 0.5)',
                 })}
               >
-                <li>
-                  <label>
-                    <span>Mic</span>
-                    <input
-                      type="range"
-                      value={remoteVolume}
-                      max={1}
-                      min={0}
-                      step={0.01}
-                      onChange={(e) => setRemoteVolume(Number(e.target.value))}
-                    />
-                  </label>
-                  <button
-                    type="button"
-                    css={css({
-                      display: 'inline-flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      textDecoration: isMicMute ? 'line-through' : 'none',
-                      width: '5rem',
-                      '& span': {
-                        textDecoration: isMicMute ? 'line-through' : 'none',
-                      },
-                    })}
-                    onClick={() => setMicMute((prev) => !prev)}
-                  >
-                    <span>{'🎤'}</span>
-                    <span>{remoteVolume.toFixed(2)}</span>
-                  </button>
-                </li>
                 <li>
                   <label>
                     <span>Speaker</span>

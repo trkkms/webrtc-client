@@ -1,14 +1,7 @@
 import { Logger } from '../util/types';
 
-export interface PeerEventEmitters {
-  onReceiveOffer: (sdp: RTCSessionDescription) => void;
-  onReceiveAnswer: (sdp: RTCSessionDescription) => void;
-  setVolume: (volume: number) => void;
-}
-
 export default class PeerService {
   private peer?: RTCPeerConnection;
-  private tuner?: AudioTuner;
   constructor(private logger: Logger) {}
   preparePeer(): RTCPeerConnection {
     if (this.peer !== undefined) {
@@ -23,9 +16,17 @@ export default class PeerService {
     onSDP: (sdp: RTCSessionDescription | null) => void,
   ): Promise<void> {
     const peer = this.preparePeer();
-    peer.ontrack = (evt) => {
-      onTrack(evt.streams[0]);
-    };
+    if ('ontrack' in peer) {
+      peer.ontrack = (evt) => {
+        onTrack(evt.streams[0]);
+      };
+    } else {
+      // eslint-disable-next-line
+      (peer as any).onaddstream = (evt: { stream: MediaStream }) => {
+        onTrack(evt.stream);
+      };
+    }
+
     peer.onicecandidate = (evt) => {
       if (!evt.candidate) {
         onSDP(peer.localDescription);
@@ -76,39 +77,19 @@ export default class PeerService {
     this.peer.close();
     this.peer = undefined;
   }
-  addLocalStream(base: MediaStream, setLocalAudio: (stream: MediaStream) => void): (volume: number) => void {
-    if (this.tuner === undefined) {
-      this.tuner = new AudioTuner();
-    }
+  addLocalStream(stream: MediaStream): void {
     if (this.peer === undefined) {
       this.logger('no peer found on addLocalStream()', 'error');
-      return () => {};
+      return;
     }
-    const [stream, setVolume] = this.tuner.createTunableMedia(base);
-    setLocalAudio(stream);
-    for (const track of stream.getTracks()) {
-      this.peer.addTrack(track);
+    if ('addStream' in this.peer) {
+      // eslint-disable-next-line
+      (this.peer as any).addStream(stream);
+    } else {
+      for (const track of stream.getTracks()) {
+        this.peer.addTrack(track);
+      }
     }
-    return setVolume;
-  }
-}
-
-class AudioTuner {
-  // private context: AudioContext = new AudioContext();
-  createTunableMedia(base: MediaStream): [stream: MediaStream, setVolume: (volume: number) => void] {
-    // const source = this.context.createMediaStreamSource(base);
-    // const dest = this.context.createMediaStreamDestination();
-    // const gainNode = this.context.createGain();
-    // source.connect(gainNode);
-    // gainNode.connect(dest);
-    // gainNode.gain.value = 1.0;
-    return [
-      // dest.stream,
-      base,
-      () => {},
-      // (volume) => {
-      //   gainNode.gain.value = volume;
-      // },
-    ];
+    return;
   }
 }
