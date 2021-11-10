@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cache-v1';
+const CACHE_NAME = 'cache-v0.01';
 const urlsToCache = [
   '/webrtc-client/main.js',
   '/webrtc-client/index.html',
