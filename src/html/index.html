@@ -16,6 +16,9 @@
           scroll-behavior: smooth;
       }
   </style>
+  <script type='application/javascript'>
+    navigator.serviceWorker.register('/service-worker.js', {scope: 'webrtc-client'})
+  </script>
   <title>App</title>
 </head>
 <body>
